@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  auth-service:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - SWAGGER_HOST=localhost:8000
+    volumes:
+      - ./docs:/app/docs  # Optional: For development, mount docs directory
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - auth-network
+
+  postgres:
+    image: postgres:15-alpine
+    env_file:
+      - .env  # Or specify specific variables
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-auth_service}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - auth-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - auth-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8080:8080"
+    environment:
+      - URLS_PRIMARY_NAME=Auth Service
+      - URLS_PRIMARY_URL=http://auth-service:8000/swagger/doc.json
+    depends_on:
+      - auth-service
+    networks:
+      - auth-network
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  auth-network:
+    driver: bridge

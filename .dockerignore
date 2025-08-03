@@ -1,0 +1,9 @@
+.git
+.gitignore
+bin
+vendor
+*.log
+*.swp
+*.swo
+.DS_Store
+.env
