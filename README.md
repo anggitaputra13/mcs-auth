@@ -16,6 +16,6 @@ docker-compose logs -f
 
 #Accessing the Services
 Authentication Service: http://localhost:8000
-Swagger UI: http://localhost:8080
+Swagger UI: http://localhost:8000/swagger/index.html
 PostgreSQL: Accessible on localhost:5432 (username: postgres, password: postgres)
 Redis: Accessible on localhost:6379
